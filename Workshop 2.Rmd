@@ -1,0 +1,170 @@
+---
+title: "Workshop 2"
+output: html_document
+---
+
+```{r}
+### Load packages
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(magrittr) # For extra-piping operators (eg. %<>%)
+```
+
+
+```{r}
+# load the dataset from GitHub - original source
+penguins <- read_csv("https://sds-aau.github.io/SDS-master/M1/data/cities.csv")
+to_get_region= read_csv("https://sds-aau.github.io/SDS-master/M1/data/cities.csv")
+```
+```{r}
+penguins %>% head()
+```
+
+```{r}
+penguins %>% glimpse()
+```
+
+```{r}
+# drop all missing observations 
+penguins %<>% drop_na()
+```
+
+
+## Brief EDA
+
+```{r}
+penguins %>% count(region)
+```
+
+
+
+
+### PRincipal Component Analysis
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+```
+```{r}
+res_pca <- penguins %>% 
+  column_to_rownames("place")%>%
+  select_if(is_numeric) %>%
+  PCA(scale.unit = TRUE, graph = FALSE)
+
+##column_to_rownames
+```
+We only select the columns that are values, and scale the variables. 
+
+```{r,fig.align='center'}
+res_pca %>% 
+  fviz_screeplot(addlabels = TRUE, 
+                 ncp = 10, 
+                 ggtheme = theme_gray())
+```
+
+We can see the albow formation that we use 2 dimensions 
+
+
+```{r}
+res_pca$eig %>% as_tibble()
+```
+We usually would stop when the eigenvalue is below 1, but this will be at 5. 
+
+```{r}
+res_pca %>% get_pca_var()
+```
+
+```{r}
+res_pca$var$coord %>% 
+  as_tibble() %>% 
+  head()
+```
+```{r,,fig.width=15,fig.height=10,fig.align='center'}
+res_pca %>%
+  fviz_pca_biplot(alpha.ind = "cos2", #
+                  col.ind = "contrib", #how much does this variable contribute red more contributive 
+                  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                  geom = "point", 
+                  ggtheme = theme_gray()) 
+```
+Test
+
+```{r,,fig.width=15,fig.height=10,fig.align='center'}
+res_pca %>%
+  fviz_pca_biplot(alpha.ind = "cos2", #kinda fejled, so more visiable the futher away from the middle
+                  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                  geom = "point", 
+                  ggtheme = theme_gray(),
+                  addEllipses = TRUE,
+                  habillage = to_get_region %>% pull(region) %>% factor() ) 
+```
+##Clustering
+
+
+##on the dimentionaly data
+
+```{r}
+res_pca %>%
+  glimpse()
+```
+
+
+```{r}
+#penguins[,"pca1"]= res_pca$ind$coord[,1]
+#penguins[,"pca2"]= res_pca$ind$coord[,2]
+```
+
+
+### K-means
+
+
+```{r}
+# install.packages('uwot') # If necessary install
+library(uwot)
+```
+
+```{r,fig.align='center'}
+# We use the viz_nbclust() function of the factorextra package
+penguins %>%
+  select_if(is_numeric) %>% 
+  scale() %>%
+  fviz_nbclust(kmeans, method = "wss")  
+```
+
+```{r}
+res_km <- penguins %>% 
+  select_if(is_numeric) %>%
+  scale() %>% 
+  kmeans(centers = 2, nstart = 20)  
+```
+
+```{r}
+res_km 
+```
+
+
+```{r,,fig.width=15,fig.height=10,fig.align='center'}
+res_km %>% 
+  fviz_cluster(data = penguins %>% select_if(is_numeric) ,
+               ggtheme = theme_gray())  
+```
+Under the hood it does a PCA when we just do it on the data. 
+
+To see the cluster assignement to each observation we can see in the cluster variable 
+
+```{r}
+res_km$cluster
+
+```
+
+
+Put the cluster variable into the data
+
+
+Create table to show region in each cluster 
+
+
+
+
+
+
+
