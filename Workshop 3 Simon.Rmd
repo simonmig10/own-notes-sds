@@ -1,0 +1,155 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+library(lubridate)
+
+library(magrittr)
+
+```
+
+
+```{r}
+listing= read_csv("http://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2021-07-20/data/listings.csv.gz")
+
+calender= read_csv("http://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2021-07-20/data/calendar.csv.gz")
+
+```
+
+```{r}
+glimpse(listing)
+
+```
+
+We can see price is an numeric variable, we shoudl remove all the $ signs 
+
+```{r}
+
+listing %>% pull(price) %>% str_remove_all("[\\$,]")%>% as.numeric()
+
+#we can do it a lot easier. 
+
+price_col=listing %>% pull(price)%>%parse_number()
+
+#We do it for the entire dataset. 
+
+listing %<>%
+  mutate(price= parse_number(price))
+
+```
+
+
+
+
+```{r}
+listing%<>%
+  rename(y=price)%>%
+  select(y, review_scores_rating, accommodates, neighbourhood_cleansed, room_type, host_is_superhost, bedrooms, host_identity_verified, host_identity_verified)
+
+listing%>%
+  ggplot(aes(x=y))+
+  geom_histogram()
+
+
+```
+
+We see there is a large outlier, we should remove this in statistics, so we can try removing it. 
+
+
+```{r}
+listing %>%
+  drop_na(y)%>%
+  filter(percent_rank(y)<0.95)
+```
+
+```{r}
+listing%<>%
+  filter(!(room_type %in% c("Shared room", "Hotel room")))
+```
+
+```{r}
+listing%>%
+  mutate(across(where(is_character), ~ifelse(.x == "", NA, .x)))
+```
+
+
+```{r}
+library(VIM)
+
+listing%>%
+  aggr(numbers= T, prop= c(T,F))
+
+```
+
+
+```{r}
+library(tidymodels)
+```
+
+
+```{r}
+data_split = listing %>% initial_split(prop=0.75, stata= y) #Stata skal bruges hvis mit data ik er normal distributed so it chooses not biased values. 
+```
+
+
+```{r}
+data_train= data_split %>% training()
+data_test= data_split %>% testing()
+```
+
+
+```{r}
+data_recipe <- data_train %>%
+  recipe(y ~.) %>%
+  step_center(all_numeric(), -all_outcomes()) %>% # Centers all numeric variables to mean = 0
+  step_scale(all_numeric(), -all_outcomes()) %>% # scales all numeric variables to sd = 1
+  step_nzv(all_predictors())  %>% # Removed predictors with zero variance
+  na.omit(all_predictors()) %>% #  knn inputation of missing values
+  prep()
+
+##We should use step_dummy(all_nominal(), ãll_outcomes(), one_hot=T) one_hot= T betyder at den ik skal droppe en af dummy variablerne (for at undgå overforklaring som i økonometri)
+
+##WE should not use na.omit anyways as it f* up the rest. 
+
+```
+
+
+
+```{r}
+data_recipe
+
+```
+
+
+```{r}
+model_lm <- linear_reg(mode = 'regression') %>%
+  set_engine('lm') 
+```
+
+
+```{r}
+workflow_general <- workflow() %>%
+  add_recipe(data_recipe) 
+
+workflow_lm <- workflow_general %>%
+  add_model(model_lm)
+```
+
+
+```{r}
+data_resample <- bootstraps(data_train, 
+                            strata = y,
+                            times = 5)
+
+#Taking the same data but always take a new sample. 
+```
+
+
+```{r}
+data_resample %>% glimpse() 
+```
+
