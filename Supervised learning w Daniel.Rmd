@@ -440,6 +440,8 @@ There is no particular reason other than to demonstrate different models with in
 To set up a model with `parsnip`, the following syntax applies:
 
 ```{r, eval=FALSE}
+library(parsnip)
+
 model_XX <- model_family(mode = 'regression/classification',
                          parameter_1 = 123,
                          parameter_2 = tune()) %>%
@@ -513,6 +515,8 @@ data_resample %>% glimpse()
 #### Hyperparameter Tuning: Elastic Net
 
 ```{r}
+library(glmnet)
+
 tune_el <-
   tune_grid(
     workflow_el,
@@ -834,6 +838,8 @@ tune_dt %>% show_best(metric = 'roc_auc', n = 1)
 #### Hyperparameter Tuning: Random Forest
 
 ```{r}
+library(xgboost)
+
 tune_xg <-
   tune_grid(
     workflow_xg,
