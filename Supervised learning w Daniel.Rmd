@@ -406,7 +406,7 @@ data_test <- data_split %>% testing()
 
 ### Preprocessing recipe
 
-We use the `recipe` package to automatize and standardize all necessary pre-processing workflows.
+We use the `recipes` package to automatize and standardize all necessary pre-processing workflows.
 
 Here, we do only some simple transformations. 
 * We normalize all numeric data by centering (subtracting the mean) and scaling (divide by standard deviation). 
