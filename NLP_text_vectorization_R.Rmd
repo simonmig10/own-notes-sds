@@ -250,7 +250,7 @@ text_tidy %<>%
 
 ```{r}
 text_tidy %<>%
-  unnest_tokens(word, word, token = 'ngrams', n = 2, n_min = 1) %>%
+  unnest_tokens(word, word, token = 'ngrams', n = 2, n_min = 1) %>% ## We have both bio grams and single words, we see that biograms are not that important tho
   group_by(word) %>% filter(n() > 25) %>% ungroup() 
 ```
 
@@ -314,8 +314,10 @@ recipe_base <- text %>%
 * Here, we can further preprocess to do whatever we would like, such as obtaining a dtm
 
 ```{r}
+
+library(stopwords)
 recipe_base %>% 
-  step_tf(text) %>% 
+  step_tf(text) %>%  #We can add steps to the recipe 
   prep() %>% 
   juice() %>% 
   head(100)
@@ -323,7 +325,7 @@ recipe_base %>%
 
 ```{r}
 text_pca <- text_dtm %>% 
-  column_to_rownames('id') %>% 
+  column_to_rownames('id') %>%  # we change the id column to rownames so they dont get used in the dimention reduction. 
   prcomp(center = TRUE, scale. = TRUE, rank. = 10)
 ```
 
@@ -346,7 +348,7 @@ text_pca %>% tidy()
 
 ```{r}
 recipe_pca <- recipe_base %>% # tokenize
-  step_tfidf(text, prefix = '') %>% # TFIDF weighting
+  step_tfidf(text, prefix = '') %>% # TFIDF weighting --> so different from the above. 
   step_pca(all_predictors(), num_comp = 10) %>% # PCA
   prep() 
 ```
@@ -377,6 +379,7 @@ recipe_pca %>%
   facet_wrap(~component, nrow = 1) +
   labs(y = NULL)
 ```
+We can see negative or positive words in each component. 
 
 * **Note**: Also check further for further dimensionlity reduction steps:
    * tep_kpca():
@@ -464,10 +467,12 @@ lda_gamma %>%
 * Note that an LDA can also be performed via a recipe:
 
 ```{r}
-recipe_lda <- recipe_base %>% # tokenize
-  step_untokenize(text) %>% # Is a bit silly, needs the full text vectors instead of tokens....
-  step_lda(text, num_topics = 6) %>% # LDA
-  prep() 
+library(textfeatures)
+
+#recipe_lda <- recipe_base %>% # tokenize
+  #step_untokenize(text) %>% # Is a bit silly, needs the full text vectors instead of tokens....
+  #step_lda(text, num_topics = 6) %>% # LDA
+  #prep() 
 ```
 
 ```{r}
@@ -509,7 +514,7 @@ topicmodels_json_ldavis <- function(fitted, doc_dtm, method = "PCA"){
 
 
 ```{r}
-library(LDAvis)
+
 json_lda <- topicmodels_json_ldavis(fitted = text_lda, 
                                     doc_dtm = text_dtm, 
                                     method = "TSNE")
