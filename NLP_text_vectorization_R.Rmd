@@ -683,7 +683,7 @@ CHapters:
 * Julia Silge and David Robinson (2020). Text Mining with R: A Tidy Approach, O’Reilly. Online available [here](https://www.tidytextmining.com/)
    * [Chapter 6](https://www.tidytextmining.com/topicmodeling.html): xxx
 * Emil Hvidfeldt and Julia Silge (2020). Supervised Machine Learning for Text Analysis in R, online available [here](https://smltar.com/)
-   * [Chapter 5](https://smltar.com/embeddings.html): Word Embeddings
+   * [Chapter 5]( ): Word Embeddings
 
 
 Articles:

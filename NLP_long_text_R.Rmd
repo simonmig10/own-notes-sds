@@ -407,7 +407,7 @@ gender_bigrams <-  text %>%
 
 ```{r}
 library(spacyr)
-spacy_install() # creates a new conda environment called spacy_condaenv, as long as some version of conda is installed 
+#spacy_install() # creates a new conda environment called spacy_condaenv, as long as some version of conda is installed 
 ```
 
 ```{r}
