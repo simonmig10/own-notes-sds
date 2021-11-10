@@ -68,9 +68,6 @@ library(keras)
 #reticulate::install_miniconda()
 #keras::install_keras(version = "2.5-cpu")
 
-
-library(tensorflow)
-
 ```
 
 # Our first deep learning model
@@ -344,7 +341,7 @@ model
 ```
 
 ```{r}
-# devtools::install_github("andrie/deepviz")
+devtools::install_github("andrie/deepviz")
 library(deepviz)
 plot_model(model)
 ```
